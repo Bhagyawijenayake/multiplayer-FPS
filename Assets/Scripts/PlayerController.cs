@@ -26,7 +26,7 @@ public class PlayerController : MonoBehaviour
     public LayerMask groundLayers;
 
     public GameObject bulletImpact;
-    public float timeBetweenShots = .1f;
+    public float timeBetweenShots;
     private float shotCounter;
 
     // Start is called before the first frame update
@@ -37,6 +37,8 @@ public class PlayerController : MonoBehaviour
 
         // Get the camera component
         cam = Camera.main;
+
+        timeBetweenShots = 1f;
     }
 
     // Update is called once per frame
@@ -106,6 +108,7 @@ public class PlayerController : MonoBehaviour
         if (Input.GetMouseButton(0))
         {
             shotCounter -= Time.deltaTime;
+            Debug.Log(shotCounter);
             if (shotCounter <= 0)
             {
                 shoot();
@@ -151,15 +154,14 @@ public class PlayerController : MonoBehaviour
         Ray ray = cam.ViewportPointToRay(new Vector3(.5f, .5f, 0));
         ray.origin = cam.transform.position;
 
-        //
+        
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
-            Debug.Log("I hit " + hit.collider.gameObject.name);
+           // Debug.Log("I hit " + hit.collider.gameObject.name);
 
             GameObject bulletImpactObject = Instantiate(bulletImpact, hit.point + (hit.normal * .002f), Quaternion.LookRotation(hit.normal, Vector3.up));
             Destroy(bulletImpactObject, 5f);
         }
-
         shotCounter = timeBetweenShots;
     }
 
