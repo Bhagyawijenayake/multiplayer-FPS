@@ -26,6 +26,8 @@ public class PlayerController : MonoBehaviour
     public LayerMask groundLayers;
 
     public GameObject bulletImpact;
+    public float timeBetweenShots = .1f;
+    private float shotCounter;
 
     // Start is called before the first frame update
     void Start()
@@ -101,7 +103,14 @@ public class PlayerController : MonoBehaviour
             shoot();
         }
 
-
+        if (Input.GetMouseButton(0))
+        {
+            shotCounter -= Time.deltaTime;
+            if (shotCounter <= 0)
+            {
+                shoot();
+            }
+        }
 
 
 
@@ -147,9 +156,11 @@ public class PlayerController : MonoBehaviour
         {
             Debug.Log("I hit " + hit.collider.gameObject.name);
 
-          GameObject bulletImpactObject =  Instantiate(bulletImpact, hit.point + (hit.normal*.002f), Quaternion.LookRotation(hit.normal,Vector3.up));
+            GameObject bulletImpactObject = Instantiate(bulletImpact, hit.point + (hit.normal * .002f), Quaternion.LookRotation(hit.normal, Vector3.up));
             Destroy(bulletImpactObject, 5f);
         }
+
+        shotCounter = timeBetweenShots;
     }
 
     // LateUpdate is called after Update
