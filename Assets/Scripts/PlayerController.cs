@@ -93,6 +93,20 @@ public class PlayerController : MonoBehaviour
         movement.y += Physics.gravity.y * Time.deltaTime*gravityMod;
 
         charCon.Move(movement * Time.deltaTime);
+
+        // Unlock the cursor if the player presses the escape key
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            Cursor.lockState = CursorLockMode.None;
+        }else if(Cursor.lockState == CursorLockMode.None)
+        {
+            // Lock the cursor if the player clicks the left mouse button
+            // 0 means the left mouse button
+            if(Input.GetMouseButtonDown(0))
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+            }
+        }
     }
 
     // LateUpdate is called after Update
