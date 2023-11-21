@@ -29,6 +29,10 @@ public class PlayerController : MonoBehaviour
     public float timeBetweenShots;
     private float shotCounter;
 
+    public float maxHeat = 10f, heatPerShot = 1f, coolRate = 4f, overheatCoolRate = 5f;
+    private float heatCounter;
+    private bool overHeated;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -38,7 +42,7 @@ public class PlayerController : MonoBehaviour
         // Get the camera component
         cam = Camera.main;
 
-        timeBetweenShots = 1f;
+        timeBetweenShots = 0.1f;
     }
 
     // Update is called once per frame
@@ -100,24 +104,40 @@ public class PlayerController : MonoBehaviour
 
         charCon.Move(movement * Time.deltaTime);
 
-        if (Input.GetMouseButtonDown(0))
+        if (!overHeated)
         {
-            shoot();
-        }
-
-        if (Input.GetMouseButton(0))
-        {
-            shotCounter -= Time.deltaTime;
-            Debug.Log(shotCounter);
-            if (shotCounter <= 0)
+            if (Input.GetMouseButtonDown(0))
             {
                 shoot();
             }
+
+            if (Input.GetMouseButton(0))
+            {
+                shotCounter -= Time.deltaTime;
+                Debug.Log(shotCounter);
+                if (shotCounter <= 0)
+                {
+                    shoot();
+                }
+            }
+
+            heatCounter -= coolRate * Time.deltaTime;
+
+        }
+        else
+        {
+            heatCounter -= overheatCoolRate * Time.deltaTime;
+            if (heatCounter <= 0)
+            {
+
+                overHeated = false;
+            }
         }
 
-
-
-
+        if (heatCounter < 0)
+        {
+            heatCounter = 0f;
+        }
 
 
 
@@ -154,15 +174,25 @@ public class PlayerController : MonoBehaviour
         Ray ray = cam.ViewportPointToRay(new Vector3(.5f, .5f, 0));
         ray.origin = cam.transform.position;
 
-        
+
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
-           // Debug.Log("I hit " + hit.collider.gameObject.name);
+            // Debug.Log("I hit " + hit.collider.gameObject.name);
 
             GameObject bulletImpactObject = Instantiate(bulletImpact, hit.point + (hit.normal * .002f), Quaternion.LookRotation(hit.normal, Vector3.up));
             Destroy(bulletImpactObject, 5f);
         }
         shotCounter = timeBetweenShots;
+
+        Debug.Log(heatCounter);
+
+        heatCounter += heatPerShot;
+
+        if (heatCounter >= maxHeat)
+        {
+            heatCounter = maxHeat;
+            overHeated = true;
+        }
     }
 
     // LateUpdate is called after Update
