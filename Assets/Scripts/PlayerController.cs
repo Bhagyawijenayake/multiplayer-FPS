@@ -19,7 +19,7 @@ public class PlayerController : MonoBehaviour
 
     private float yVel;
 
-    public float jumpForce = 12f , gravityMod = 2.5f;
+    public float jumpForce = 12f, gravityMod = 2.5f;
 
     public Transform groundCheckPoint;
     private bool isGrounded;
@@ -90,22 +90,60 @@ public class PlayerController : MonoBehaviour
         }
 
         //gravity
-        movement.y += Physics.gravity.y * Time.deltaTime*gravityMod;
+        movement.y += Physics.gravity.y * Time.deltaTime * gravityMod;
 
         charCon.Move(movement * Time.deltaTime);
 
+        if (Input.GetMouseButtonDown(0))
+        {
+            shoot();
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         // Unlock the cursor if the player presses the escape key
-        if(Input.GetKeyDown(KeyCode.Escape))
+        if (Input.GetKeyDown(KeyCode.Escape))
         {
             Cursor.lockState = CursorLockMode.None;
-        }else if(Cursor.lockState == CursorLockMode.None)
+        }
+        else if (Cursor.lockState == CursorLockMode.None)
         {
             // Lock the cursor if the player clicks the left mouse button
             // 0 means the left mouse button
-            if(Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0))
             {
                 Cursor.lockState = CursorLockMode.Locked;
             }
+        }
+    }
+
+    private void shoot()
+    {
+
+        Ray ray = cam.ViewportPointToRay(new Vector3(.5f, .5f, 0));
+        ray.origin = cam.transform.position;
+
+        //
+        if (Physics.Raycast(ray, out RaycastHit hit))
+        {
+            Debug.Log("I hit " + hit.collider.gameObject.name);
         }
     }
 
