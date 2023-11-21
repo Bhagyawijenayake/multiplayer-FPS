@@ -43,6 +43,8 @@ public class PlayerController : MonoBehaviour
         cam = Camera.main;
 
         timeBetweenShots = 0.1f;
+
+        UIController.instance.weaponTempSlider.maxValue = maxHeat;
     }
 
     // Update is called once per frame
@@ -139,6 +141,8 @@ public class PlayerController : MonoBehaviour
         {
             heatCounter = 0f;
         }
+
+        UIController.instance.weaponTempSlider.value = heatCounter;
 
 
 
