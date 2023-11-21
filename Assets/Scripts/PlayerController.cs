@@ -25,6 +25,8 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded;
     public LayerMask groundLayers;
 
+    public GameObject bulletImpact;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -144,6 +146,9 @@ public class PlayerController : MonoBehaviour
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
             Debug.Log("I hit " + hit.collider.gameObject.name);
+
+          GameObject bulletImpactObject =  Instantiate(bulletImpact, hit.point + (hit.normal*.002f), Quaternion.LookRotation(hit.normal,Vector3.up));
+            Destroy(bulletImpactObject, 5f);
         }
     }
 
