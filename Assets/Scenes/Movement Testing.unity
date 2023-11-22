@@ -123,6 +123,11 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &42579788 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 3b7c14d870fdc314f8060a632c4fa82b, type: 3}
+  m_PrefabInstance: {fileID: 2105846919}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &43723744
 GameObject:
   m_ObjectHideFlags: 0
@@ -282,6 +287,7 @@ MonoBehaviour:
   isAutomatic: 1
   timeBetweenShots: 0.1
   heatPerShot: 1
+  muzzleFlash: {fileID: 1112507334}
 --- !u!1 &270146040
 GameObject:
   m_ObjectHideFlags: 0
@@ -464,6 +470,7 @@ MonoBehaviour:
   isAutomatic: 0
   timeBetweenShots: 0.1
   heatPerShot: 2
+  muzzleFlash: {fileID: 1006192377}
 --- !u!1 &569845735
 GameObject:
   m_ObjectHideFlags: 0
@@ -1388,6 +1395,16 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1006192377 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 94d92f057ca27234aa28b52a90ef44e1, type: 3}
+  m_PrefabInstance: {fileID: 938309782}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1112507334 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 57f080b300fdcf94f8f7a8fa9ce12149, type: 3}
+  m_PrefabInstance: {fileID: 879970028}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1130630263
 GameObject:
   m_ObjectHideFlags: 0
@@ -1999,6 +2016,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   bulletImpact: {fileID: 8500862831320295414, guid: 12baad36f2e55524c818828bd4481504, type: 3}
+  muzzleDisplayTime: 0
   maxHeat: 10
   coolRate: 4
   overheatCoolRate: 5
@@ -2610,6 +2628,7 @@ MonoBehaviour:
   isAutomatic: 1
   timeBetweenShots: 0.35
   heatPerShot: 5
+  muzzleFlash: {fileID: 42579788}
 --- !u!1001 &2105846919
 PrefabInstance:
   m_ObjectHideFlags: 0

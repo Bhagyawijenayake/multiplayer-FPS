@@ -26,8 +26,10 @@ public class PlayerController : MonoBehaviour
     public LayerMask groundLayers;
 
     public GameObject bulletImpact;
-   // public float timeBetweenShots;
+    // public float timeBetweenShots;
     private float shotCounter;
+    public float muzzleDisplayTime;
+    private float muzzleDisplayCounter;
 
     public float maxHeat = 10f, /*heatPerShot = 1f,*/ coolRate = 4f, overheatCoolRate = 5f;
     private float heatCounter;
@@ -44,7 +46,9 @@ public class PlayerController : MonoBehaviour
         // Get the camera component
         cam = Camera.main;
 
-       // timeBetweenShots = 0.1f;
+        // timeBetweenShots = 0.1f;
+
+        muzzleDisplayTime = 1/60f;
 
         UIController.instance.weaponTempSlider.maxValue = maxHeat;
 
@@ -111,6 +115,17 @@ public class PlayerController : MonoBehaviour
 
         charCon.Move(movement * Time.deltaTime);
 
+        allGuns[selectedGun].muzzleFlash.SetActive(false);
+
+        if(allGuns[selectedGun].muzzleFlash.activeInHierarchy)
+        {
+            muzzleDisplayCounter -= Time.deltaTime;
+            if(muzzleDisplayCounter <= 0)
+            {
+                allGuns[selectedGun].muzzleFlash.SetActive(false);
+            }
+        }
+
         if (!overHeated)
         {
             if (Input.GetMouseButtonDown(0))
@@ -138,7 +153,7 @@ public class PlayerController : MonoBehaviour
             {
 
                 overHeated = false;
-                 UIController.instance.overheatedmessage.gameObject.SetActive(false);
+                UIController.instance.overheatedmessage.gameObject.SetActive(false);
             }
         }
 
@@ -150,22 +165,27 @@ public class PlayerController : MonoBehaviour
         UIController.instance.weaponTempSlider.value = heatCounter;
 
 
-if(Input.GetAxis("Mouse ScrollWheel") > 0f){
-    selectedGun++;
-    if(selectedGun >= allGuns.Length){
-        selectedGun = 0;
-    }
+        if (Input.GetAxis("Mouse ScrollWheel") > 0f)
+        {
+            selectedGun++;
+            if (selectedGun >= allGuns.Length)
+            {
+                selectedGun = 0;
+            }
 
-    SwitchGun();
-   
-}else if(Input.GetAxis("Mouse ScrollWheel") < 0f){
-    selectedGun--;
-    if(selectedGun < 0){
-        selectedGun = allGuns.Length - 1;
-    }
+            SwitchGun();
 
-    SwitchGun();
-}
+        }
+        else if (Input.GetAxis("Mouse ScrollWheel") < 0f)
+        {
+            selectedGun--;
+            if (selectedGun < 0)
+            {
+                selectedGun = allGuns.Length - 1;
+            }
+
+            SwitchGun();
+        }
 
 
 
@@ -218,8 +238,11 @@ if(Input.GetAxis("Mouse ScrollWheel") > 0f){
             heatCounter = maxHeat;
             overHeated = true;
 
-           UIController.instance.overheatedmessage.gameObject.SetActive(true);
+            UIController.instance.overheatedmessage.gameObject.SetActive(true);
         }
+
+        allGuns[selectedGun].muzzleFlash.SetActive(true);
+        muzzleDisplayCounter = muzzleDisplayTime;
     }
 
     // LateUpdate is called after Update
@@ -240,6 +263,8 @@ if(Input.GetAxis("Mouse ScrollWheel") > 0f){
         }
 
         allGuns[selectedGun].gameObject.SetActive(true);
-       
+
+        allGuns[selectedGun].muzzleFlash.SetActive(false);
+
     }
 }
