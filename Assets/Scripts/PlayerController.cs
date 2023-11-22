@@ -26,10 +26,10 @@ public class PlayerController : MonoBehaviour
     public LayerMask groundLayers;
 
     public GameObject bulletImpact;
-    public float timeBetweenShots;
+   // public float timeBetweenShots;
     private float shotCounter;
 
-    public float maxHeat = 10f, heatPerShot = 1f, coolRate = 4f, overheatCoolRate = 5f;
+    public float maxHeat = 10f, /*heatPerShot = 1f,*/ coolRate = 4f, overheatCoolRate = 5f;
     private float heatCounter;
     private bool overHeated;
     public Gun[] allGuns;
@@ -44,7 +44,7 @@ public class PlayerController : MonoBehaviour
         // Get the camera component
         cam = Camera.main;
 
-        timeBetweenShots = 0.1f;
+       // timeBetweenShots = 0.1f;
 
         UIController.instance.weaponTempSlider.maxValue = maxHeat;
 
@@ -118,7 +118,7 @@ public class PlayerController : MonoBehaviour
                 shoot();
             }
 
-            if (Input.GetMouseButton(0))
+            if (Input.GetMouseButton(0) && allGuns[selectedGun].isAutomatic)
             {
                 shotCounter -= Time.deltaTime;
                 Debug.Log(shotCounter);
@@ -207,11 +207,11 @@ if(Input.GetAxis("Mouse ScrollWheel") > 0f){
             GameObject bulletImpactObject = Instantiate(bulletImpact, hit.point + (hit.normal * .002f), Quaternion.LookRotation(hit.normal, Vector3.up));
             Destroy(bulletImpactObject, 5f);
         }
-        shotCounter = timeBetweenShots;
+        shotCounter = allGuns[selectedGun].timeBetweenShots;
 
         Debug.Log(heatCounter);
 
-        heatCounter += heatPerShot;
+        heatCounter += allGuns[selectedGun].heatPerShot;
 
         if (heatCounter >= maxHeat)
         {
