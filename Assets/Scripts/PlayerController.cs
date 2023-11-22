@@ -54,6 +54,10 @@ public class PlayerController : MonoBehaviour
 
         // Switch to the first gun in the array
         SwitchGun();
+
+        Transform newTrans = SpawnManager.instance.getSpawnPoint();
+        transform.position = newTrans.position;
+        transform.rotation = newTrans.rotation;
     }
 
     // Update is called once per frame
