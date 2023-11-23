@@ -33,6 +33,10 @@ public class Launcher : MonoBehaviourPunCallbacks
     public RoomButton theRoomButton;
     private List<RoomButton> allRoomButtons = new List<RoomButton>();
 
+    public GameObject nameInputScreen;
+    public TMP_InputField nameInput;
+    private bool hasSetNickName ;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -50,6 +54,7 @@ public class Launcher : MonoBehaviourPunCallbacks
         roomScreen.SetActive(false);
         errorScreen.SetActive(false);
         roomBrowserScreen.SetActive(false);
+        nameInputScreen.SetActive(false);
         
 
     }
@@ -69,6 +74,21 @@ public class Launcher : MonoBehaviourPunCallbacks
         //Debug.Log("Joined Lobby");
 
         PhotonNetwork.NickName = "Player " + Random.Range(0, 1000).ToString();
+
+        if (!hasSetNickName)
+        {
+            CloseMenus();
+            nameInputScreen.SetActive(true);
+
+            if (PlayerPrefs.HasKey("PlayerName"))
+            {
+                nameInput.text = PlayerPrefs.GetString("PlayerName");
+            }
+        }
+        else
+        {
+            PhotonNetwork.NickName = PlayerPrefs.GetString("PlayerName");
+        }
     }
 
     public void OpenRoomCreate()
@@ -127,7 +147,7 @@ public class Launcher : MonoBehaviourPunCallbacks
         TMP_Text newPlayerLabel = Instantiate(playerNameLabel, playerNameLabel.transform.parent).GetComponent<TMP_Text>();
         newPlayerLabel.text = newPlayer.NickName;
         newPlayerLabel.gameObject.SetActive(true);
-        
+
         allPlayers.Add(newPlayerLabel);
     }
 
@@ -216,6 +236,19 @@ public class Launcher : MonoBehaviourPunCallbacks
         CloseMenus();
         loadingText.text = "Joining Room...";
         loadingScreen.SetActive(true);
+    }
+
+    public void SetNickName()
+    {
+        if (!string.IsNullOrEmpty(nameInput.text))
+        {
+            PhotonNetwork.NickName = nameInput.text;
+            PlayerPrefs.SetString("PlayerName", nameInput.text);
+
+            CloseMenus();
+            menuButtons.SetActive(true);
+            hasSetNickName = true;
+        }
     }
 
     public void QuitGame()
