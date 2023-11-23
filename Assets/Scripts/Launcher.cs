@@ -27,6 +27,10 @@ public class Launcher : MonoBehaviourPunCallbacks
     public GameObject errorScreen;
     public TMP_Text errorText;
 
+    public GameObject roomBrowserScreen;
+    public RoomButton theRoomButton;
+    private List<RoomButton> allRoomButtons = new List<RoomButton>();
+
     // Start is called before the first frame update
     void Start()
     {
@@ -43,6 +47,7 @@ public class Launcher : MonoBehaviourPunCallbacks
         createRoomScreen.SetActive(false);
         roomScreen.SetActive(false);
         errorScreen.SetActive(false);
+        roomBrowserScreen.SetActive(false);
     }
 
     public override void OnConnectedToMaster()
@@ -115,6 +120,51 @@ public class Launcher : MonoBehaviourPunCallbacks
     {
         CloseMenus();
         menuButtons.SetActive(true);
+    }
+
+    public void OpenRoomBrowser()
+    {
+        CloseMenus();
+        roomBrowserScreen.SetActive(true);
+    }
+
+    public void CloseRoomBrowser()
+    {
+        CloseMenus();
+        menuButtons.SetActive(true);
+    }
+
+    public override void OnRoomListUpdate(List<RoomInfo> roomList)
+    {
+        foreach(RoomButton rb in allRoomButtons)
+        {
+            Destroy(rb.gameObject);
+        }
+        allRoomButtons.Clear();
+
+        // Deactivate the room button in the UI by setting its active state to false
+        theRoomButton.gameObject.SetActive(false);
+
+        
+        for(int x = 0; x < roomList.Count; x++)
+        {
+            // Check if the current room in the list is not full and has not been removed from the list
+            if(roomList[x].PlayerCount != roomList[x].MaxPlayers && !roomList[x].RemovedFromList)
+            {
+                // Instantiate a new room button in the room browser screen
+                RoomButton newButton = Instantiate(theRoomButton, theRoomButton.transform.parent);
+                
+                // Set the details of the new room button to match the current room
+                newButton.SetButtonDetails(roomList[x]);
+                
+                // Activate the new room button in the UI by setting its active state to true
+                newButton.gameObject.SetActive(true);
+                
+                // Add the new room button to the list of all room buttons
+                allRoomButtons.Add(newButton);
+            }
+        }
+       
     }
 
 }
