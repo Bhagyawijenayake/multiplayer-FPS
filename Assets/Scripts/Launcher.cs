@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 using TMPro;
-
+using Photon.Realtime;
 
 public class Launcher : MonoBehaviourPunCallbacks
 {
@@ -16,6 +16,11 @@ public class Launcher : MonoBehaviourPunCallbacks
     public GameObject loadingScreen;
     public TMP_Text loadingText;
     public GameObject menuButtons;
+    public GameObject createRoomScreen;
+    public TMP_InputField roomNameInput;
+
+    public GameObject roomScreen;
+    public TMP_Text roomNameText;
 
     // Start is called before the first frame update
     void Start()
@@ -30,6 +35,8 @@ public class Launcher : MonoBehaviourPunCallbacks
     {
         loadingScreen.SetActive(false);
         menuButtons.SetActive(false);
+        createRoomScreen.SetActive(false);
+        roomScreen.SetActive(false);
     }
 
     public override void OnConnectedToMaster()
@@ -47,9 +54,34 @@ public class Launcher : MonoBehaviourPunCallbacks
         //Debug.Log("Joined Lobby");
     }
 
-    // Update is called once per frame
-    void Update()
+    public void OpenRoomCreate()
     {
+        CloseMenus();
+        createRoomScreen.SetActive(true);
+    }
+
+    public void CreateRoom()
+    {
+        if (!string.IsNullOrEmpty(roomNameInput.text))
+        {
+            RoomOptions options = new RoomOptions();
+            options.MaxPlayers = 8;
+            PhotonNetwork.CreateRoom(roomNameInput.text,options);
+            CloseMenus();
+            loadingText.text = "Creating Room...";
+            loadingScreen.SetActive(true);       
+        }
+       
+      
         
     }
+
+    public override void OnJoinedRoom()
+    {
+        CloseMenus();
+        roomScreen.SetActive(true);
+        roomNameText.text = PhotonNetwork.CurrentRoom.Name;
+       // PhotonNetwork.LoadLevel("Game");
+    }
+
 }
