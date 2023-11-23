@@ -21,8 +21,10 @@ public class Launcher : MonoBehaviourPunCallbacks
     public GameObject createRoomScreen;
     public TMP_InputField roomNameInput;
 
+
+    private List<TMP_Text> allPlayers = new List<TMP_Text>();
     public GameObject roomScreen;
-    public TMP_Text roomNameText;
+    public TMP_Text roomNameText , playerNameLabel;
 
     public GameObject errorScreen;
     public TMP_Text errorText;
@@ -48,6 +50,8 @@ public class Launcher : MonoBehaviourPunCallbacks
         roomScreen.SetActive(false);
         errorScreen.SetActive(false);
         roomBrowserScreen.SetActive(false);
+        
+
     }
 
     public override void OnConnectedToMaster()
@@ -63,6 +67,8 @@ public class Launcher : MonoBehaviourPunCallbacks
         CloseMenus();
         menuButtons.SetActive(true);
         //Debug.Log("Joined Lobby");
+
+        PhotonNetwork.NickName = "Player " + Random.Range(0, 1000).ToString();
     }
 
     public void OpenRoomCreate()
@@ -91,9 +97,32 @@ public class Launcher : MonoBehaviourPunCallbacks
     {
         CloseMenus();
         roomScreen.SetActive(true);
+
         roomNameText.text = PhotonNetwork.CurrentRoom.Name;
-        // PhotonNetwork.LoadLevel("Game");
+
+        ListAllPlayers();
+        
     }
+
+    private void ListAllPlayers()
+    {
+        foreach (TMP_Text player in allPlayers)
+        {
+            Destroy(player.gameObject);
+        }
+        allPlayers.Clear();
+
+        Player[] players = PhotonNetwork.PlayerList;
+        for (int x = 0; x < players.Length; x++)
+        {
+            TMP_Text newPlayerLabel = Instantiate(playerNameLabel, playerNameLabel.transform.parent).GetComponent<TMP_Text>();
+            newPlayerLabel.text = players[x].NickName;
+            newPlayerLabel.gameObject.SetActive(true);
+            allPlayers.Add(newPlayerLabel);
+        }
+    }
+
+       
 
     public override void OnCreateRoomFailed(short returnCode, string message)
     {
