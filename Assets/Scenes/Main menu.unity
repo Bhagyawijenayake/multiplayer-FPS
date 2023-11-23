@@ -229,7 +229,7 @@ PrefabInstance:
       objectReference: {fileID: 35696538}
     - target: {fileID: 8571622764187201493, guid: 8075eec718b010e4a854da6619c29c99, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: CloseRoomBrowser
+      value: LeaveRoom
       objectReference: {fileID: 0}
     - target: {fileID: 8571622764187201493, guid: 8075eec718b010e4a854da6619c29c99, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
