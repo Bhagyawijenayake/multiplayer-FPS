@@ -52,10 +52,10 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     public override void OnConnectedToMaster()
     {
-       
-      PhotonNetwork.JoinLobby();
-      loadingText.text = "Joining Lobby...";
-      //  Debug.Log("Connected to Master");
+
+        PhotonNetwork.JoinLobby();
+        loadingText.text = "Joining Lobby...";
+        //  Debug.Log("Connected to Master");
     }
 
     public override void OnJoinedLobby()
@@ -77,14 +77,14 @@ public class Launcher : MonoBehaviourPunCallbacks
         {
             RoomOptions options = new RoomOptions();
             options.MaxPlayers = 8;
-            PhotonNetwork.CreateRoom(roomNameInput.text,options);
+            PhotonNetwork.CreateRoom(roomNameInput.text, options);
             CloseMenus();
             loadingText.text = "Creating Room...";
-            loadingScreen.SetActive(true);       
+            loadingScreen.SetActive(true);
         }
-       
-      
-        
+
+
+
     }
 
     public override void OnJoinedRoom()
@@ -92,7 +92,7 @@ public class Launcher : MonoBehaviourPunCallbacks
         CloseMenus();
         roomScreen.SetActive(true);
         roomNameText.text = PhotonNetwork.CurrentRoom.Name;
-       // PhotonNetwork.LoadLevel("Game");
+        // PhotonNetwork.LoadLevel("Game");
     }
 
     public override void OnCreateRoomFailed(short returnCode, string message)
@@ -136,7 +136,7 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
     {
-        foreach(RoomButton rb in allRoomButtons)
+        foreach (RoomButton rb in allRoomButtons)
         {
             Destroy(rb.gameObject);
         }
@@ -145,26 +145,39 @@ public class Launcher : MonoBehaviourPunCallbacks
         // Deactivate the room button in the UI by setting its active state to false
         theRoomButton.gameObject.SetActive(false);
 
-        
-        for(int x = 0; x < roomList.Count; x++)
+
+        for (int x = 0; x < roomList.Count; x++)
         {
             // Check if the current room in the list is not full and has not been removed from the list
-            if(roomList[x].PlayerCount != roomList[x].MaxPlayers && !roomList[x].RemovedFromList)
+            if (roomList[x].PlayerCount != roomList[x].MaxPlayers && !roomList[x].RemovedFromList)
             {
                 // Instantiate a new room button in the room browser screen
                 RoomButton newButton = Instantiate(theRoomButton, theRoomButton.transform.parent);
-                
+
                 // Set the details of the new room button to match the current room
                 newButton.SetButtonDetails(roomList[x]);
-                
+
                 // Activate the new room button in the UI by setting its active state to true
                 newButton.gameObject.SetActive(true);
-                
+
                 // Add the new room button to the list of all room buttons
                 allRoomButtons.Add(newButton);
             }
         }
-       
+
+    }
+
+    public void JoinRoom(RoomInfo inputInfo)
+    {
+        PhotonNetwork.JoinRoom(inputInfo.Name);
+        CloseMenus();
+        loadingText.text = "Joining Room...";
+        loadingScreen.SetActive(true);
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
     }
 
 }
