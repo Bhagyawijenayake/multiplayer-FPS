@@ -239,7 +239,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
                 Debug.Log("I hit " + hit.collider.gameObject.GetPhotonView().Owner.NickName);
                 PhotonNetwork.Instantiate(playerHitImpact.name, hit.point, Quaternion.identity);
 
-                hit.collider.gameObject.GetPhotonView().RPC("DealDamage", RpcTarget.All,photonView.Owner.NickName);
+                hit.collider.gameObject.GetPhotonView().RPC("DealDamage", RpcTarget.All, photonView.Owner.NickName);
             }
             else
             {
@@ -269,14 +269,19 @@ public class PlayerController : MonoBehaviourPunCallbacks
     [PunRPC]
     public void DealDamage(string damager)
     {
-      TakeDamage(damager);
+        TakeDamage(damager);
     }
 
     public void TakeDamage(string damager)
     {
-         Debug.Log(photonView.Owner.NickName + "has been hit by " + damager);
+        if (photonView.IsMine)
+        {
+           // Debug.Log(photonView.Owner.NickName + "has been hit by " + damager);
 
-         gameObject.SetActive(false);
+            PlayerSpawner.instance.Die();
+           
+        }
+
     }
 
     // LateUpdate is called after Update
