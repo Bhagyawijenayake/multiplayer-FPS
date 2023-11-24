@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 1957048094016284737}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -123,6 +123,7 @@ MonoBehaviour:
   - {fileID: 4611041364755265804}
   - {fileID: 6358097880420778544}
   - {fileID: 2769885994193827743}
+  playerHitImpact: {fileID: 8500862831320295414, guid: a722380f8b1c228409c9c6e835699856, type: 3}
 --- !u!143 &1115231086034792363
 CharacterController:
   m_ObjectHideFlags: 0

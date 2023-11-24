@@ -38,6 +38,8 @@ public class PlayerController : MonoBehaviourPunCallbacks
     public Gun[] allGuns;
     private int selectedGun;
 
+    public GameObject playerHitImpact;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -232,8 +234,17 @@ public class PlayerController : MonoBehaviourPunCallbacks
         {
             // Debug.Log("I hit " + hit.collider.gameObject.name);
 
-            GameObject bulletImpactObject = Instantiate(bulletImpact, hit.point + (hit.normal * .002f), Quaternion.LookRotation(hit.normal, Vector3.up));
-            Destroy(bulletImpactObject, 5f);
+            if (hit.collider.gameObject.CompareTag("Player"))
+            {
+                Debug.Log("I hit " + hit.collider.gameObject.GetPhotonView().Owner.NickName);
+                PhotonNetwork.Instantiate(playerHitImpact.name, hit.point, Quaternion.identity);
+            }
+            else
+            {
+
+                GameObject bulletImpactObject = Instantiate(bulletImpact, hit.point + (hit.normal * .002f), Quaternion.LookRotation(hit.normal, Vector3.up));
+                Destroy(bulletImpactObject, 5f);
+            }
         }
         shotCounter = allGuns[selectedGun].timeBetweenShots;
 
@@ -256,12 +267,13 @@ public class PlayerController : MonoBehaviourPunCallbacks
     // LateUpdate is called after Update
     private void LateUpdate()
     {
-        if (photonView.IsMine){
-        // Set the camera's position to the player's position
-        cam.transform.position = viewPoint.position;
+        if (photonView.IsMine)
+        {
+            // Set the camera's position to the player's position
+            cam.transform.position = viewPoint.position;
 
-        // Set the camera's rotation to the player's rotation
-        cam.transform.rotation = viewPoint.rotation;
+            // Set the camera's rotation to the player's rotation
+            cam.transform.rotation = viewPoint.rotation;
         }
     }
 
