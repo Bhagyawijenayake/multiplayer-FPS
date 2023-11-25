@@ -143,7 +143,7 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
     public void ListPlayerSend()
     {
-        object[] package = new object[allPlayers.Count+1];
+        object[] package = new object[allPlayers.Count + 1];
 
         package[0] = state;
 
@@ -155,7 +155,7 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
             piece[2] = allPlayers[x].kills;
             piece[3] = allPlayers[x].deaths;
 
-            package[x+1] = piece;
+            package[x + 1] = piece;
         }
 
         PhotonNetwork.RaiseEvent(
@@ -187,9 +187,11 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
             if (player.actor == PhotonNetwork.LocalPlayer.ActorNumber)
             {
-                index = x-1;
+                index = x - 1;
             }
         }
+
+        StateCheck();
     }
     public void UpdateStatsSend(int actorSending, int statType, int amount)
     {
@@ -330,7 +332,7 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
         if (winnerFound)
         {
-            if(PhotonNetwork.IsMasterClient && state != GameState.Ending)
+            if (PhotonNetwork.IsMasterClient && state != GameState.Ending)
             {
                 state = GameState.Ending;
                 ListPlayerSend();
@@ -338,7 +340,43 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
             }
         }
     }
+    void StateCheck()
+    {
+        if(state == GameState.Ending)
+        {
+           EndGame();
+        }
+    }
+
+    void EndGame()
+    {
+       state = GameState.Ending;
+
+        if (PhotonNetwork.IsMasterClient)
+        {
+            PhotonNetwork.DestroyAll();
+        }
+
+        UIController.instance.endScreen.SetActive(true);
+        ShowLeaderBoard();
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        StartCoroutine(EndCo());
+
+    }
+
+    private IEnumerator EndCo()
+    {
+        yield return new WaitForSeconds(waitAfterEnding);
+
+        PhotonNetwork.AutomaticallySyncScene = false;
+        PhotonNetwork.LeaveRoom();
+    }
 }
+
+
 
 [System.Serializable]
 public class PlayerInfo

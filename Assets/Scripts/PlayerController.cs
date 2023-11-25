@@ -307,7 +307,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
         TakeDamage(damager, damageAmount, actor);
     }
 
-    public void TakeDamage(string damager, int damageAmount,int actor )
+    public void TakeDamage(string damager, int damageAmount, int actor)
     {
         if (photonView.IsMine)
         {
@@ -334,11 +334,19 @@ public class PlayerController : MonoBehaviourPunCallbacks
     {
         if (photonView.IsMine)
         {
-            // Set the camera's position to the player's position
-            cam.transform.position = viewPoint.position;
+            if (MatchManager.instance.state == MatchManager.GameState.Playing)
+            {
+                // Set the camera's position to the player's position
+                cam.transform.position = viewPoint.position;
 
-            // Set the camera's rotation to the player's rotation
-            cam.transform.rotation = viewPoint.rotation;
+                // Set the camera's rotation to the player's rotation
+                cam.transform.rotation = viewPoint.rotation;
+            }
+            else
+            {
+                cam.transform.position = MatchManager.instance.mapCamPoint.position;
+                cam.transform.rotation = MatchManager.instance.mapCamPoint.rotation;
+            }
         }
     }
 
