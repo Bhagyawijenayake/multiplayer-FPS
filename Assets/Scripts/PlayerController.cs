@@ -44,6 +44,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
     private int currentHealth;
 
     public Animator anim;
+    public GameObject playerModel;
 
     // Start is called before the first frame update
     void Start()
@@ -65,12 +66,19 @@ public class PlayerController : MonoBehaviourPunCallbacks
 
         currentHealth = maxHealth;
 
-        UIController.instance.healthSlider.maxValue = maxHealth;
-        UIController.instance.healthSlider.value = currentHealth;
+
 
         // Transform newTrans = SpawnManager.instance.getSpawnPoint();
         // transform.position = newTrans.position;
         // transform.rotation = newTrans.rotation;
+
+        if (photonView.IsMine)
+        {
+            playerModel.SetActive(false);
+
+            UIController.instance.healthSlider.maxValue = maxHealth;
+            UIController.instance.healthSlider.value = currentHealth;
+        }
     }
 
     // Update is called once per frame
