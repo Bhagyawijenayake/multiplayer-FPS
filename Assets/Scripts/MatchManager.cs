@@ -24,21 +24,35 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
     public List<PlayerInfo> allPlayers = new List<PlayerInfo>();
     private int index;
 
+    private List<LeaderBoardPlayer> lBoardPlayers = new List<LeaderBoardPlayer>();
+
     void Start()
     {
         if (!PhotonNetwork.IsConnected)
         {
             SceneManager.LoadScene(0);
 
-        }else{
-            NewPlayerSend(PhotonNetwork.NickName); 
+        }
+        else
+        {
+            NewPlayerSend(PhotonNetwork.NickName);
         }
     }
 
 
     void Update()
     {
-
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+           if(UIController.instance.leaderboard.activeInHierarchy)
+            {
+                UIController.instance.leaderboard.SetActive(false);
+            }
+            else
+            {
+                ShowLeaderBoard();
+            }
+        }
     }
 
     public void OnEvent(EventData photonEvent)
@@ -48,7 +62,7 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
             EventCodes theEvent = (EventCodes)photonEvent.Code;
             object[] data = (object[])photonEvent.CustomData;
 
-          //  Debug.Log("Received event " + theEvent);
+            //  Debug.Log("Received event " + theEvent);
 
             switch (theEvent)
             {
@@ -159,19 +173,89 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
             }
         }
     }
-    public void UpdateStatsSend()
+    public void UpdateStatsSend(int actorSending, int statType, int amount)
     {
+        object[] package = new object[] { actorSending, statType, amount };
 
+        PhotonNetwork.RaiseEvent(
+            (byte)EventCodes.UpdateStat,
+            package,
+            new RaiseEventOptions { Receivers = ReceiverGroup.All },
+            new SendOptions { Reliability = true }
+        );
     }
+
 
     public void UpdateStatsReceive(object[] dataReceived)
     {
+        int actor = (int)dataReceived[0];
+        int statType = (int)dataReceived[1];
+        int amount = (int)dataReceived[2];
+
+        for (int x = 0; x < allPlayers.Count; x++)
+        {
+            if (allPlayers[x].actor == actor)
+            {
+                switch (statType)
+                {
+                    case 0://kills
+                        allPlayers[x].kills += amount;
+                        Debug.Log("player " + allPlayers[x].name + " has " + allPlayers[x].kills + " kills");
+                        break;
+                    case 1: //deaths
+                        allPlayers[x].deaths += amount;
+                        Debug.Log("player " + allPlayers[x].name + " has " + allPlayers[x].deaths + " deaths");
+                        break;
+                }
+
+                if(x == index)
+                {
+                    UpdateStatsDisplay();
+                }
+
+                break;
+            }
+        }
+    }
+
+    public void UpdateStatsDisplay()
+    {
+        if (allPlayers.Count > index)
+        {
+            UIController.instance.killsText.text = "Kills: " + allPlayers[index].kills.ToString();
+            UIController.instance.deathsText.text = "Deaths: " + allPlayers[index].deaths.ToString();
+        }
+        else
+        {
+            UIController.instance.killsText.text = "Kills: 0";
+            UIController.instance.deathsText.text = "Deaths: 0";
+        }
 
     }
 
+    void ShowLeaderBoard()
+    {
+        UIController.instance.leaderboard.SetActive(true);
 
+        foreach (LeaderBoardPlayer lplayer in lBoardPlayers)
+        {
+            Destroy(lplayer.gameObject);
+        }
+        lBoardPlayers.Clear();
 
+        UIController.instance.leaderBoardPlayerDisplay.gameObject.SetActive(false);
 
+        foreach (PlayerInfo player in allPlayers)
+        {
+            LeaderBoardPlayer newPlayerDisplay = Instantiate(UIController.instance.leaderBoardPlayerDisplay, UIController.instance.leaderBoardPlayerDisplay.transform.parent);
+            newPlayerDisplay.setDetails(player.name, player.kills, player.deaths);
+
+            newPlayerDisplay.gameObject.SetActive(true);
+
+            lBoardPlayers.Add(newPlayerDisplay);
+          
+        }
+    }
 }
 
 [System.Serializable]
