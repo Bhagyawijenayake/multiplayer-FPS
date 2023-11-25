@@ -26,6 +26,18 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
     private List<LeaderBoardPlayer> lBoardPlayers = new List<LeaderBoardPlayer>();
 
+    public enum GameState
+    {
+        Waiting,
+        Playing,
+        Ending
+    }
+
+    public int killsToWin = 3;
+    public Transform mapCamPoint;
+    public GameState state = GameState.Waiting;
+    public float waitAfterEnding = 5f;
+
     void Start()
     {
         if (!PhotonNetwork.IsConnected)
@@ -36,15 +48,17 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
         else
         {
             NewPlayerSend(PhotonNetwork.NickName);
+
+            state = GameState.Playing;
         }
     }
 
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Tab))
+        if (Input.GetKeyDown(KeyCode.Tab) && state != GameState.Ending)
         {
-           if(UIController.instance.leaderboard.activeInHierarchy)
+            if (UIController.instance.leaderboard.activeInHierarchy)
             {
                 UIController.instance.leaderboard.SetActive(false);
             }
@@ -129,7 +143,9 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
     public void ListPlayerSend()
     {
-        object[] package = new object[allPlayers.Count];
+        object[] package = new object[allPlayers.Count+1];
+
+        package[0] = state;
 
         for (int x = 0; x < allPlayers.Count; x++)
         {
@@ -139,7 +155,7 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
             piece[2] = allPlayers[x].kills;
             piece[3] = allPlayers[x].deaths;
 
-            package[x] = piece;
+            package[x+1] = piece;
         }
 
         PhotonNetwork.RaiseEvent(
@@ -154,7 +170,9 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
     {
         allPlayers.Clear();
 
-        for (int x = 0; x < dataReceived.Length; x++)
+        state = (GameState)dataReceived[0];
+
+        for (int x = 1; x < dataReceived.Length; x++)
         {
             object[] piece = (object[])dataReceived[x];
 
@@ -169,7 +187,7 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
             if (player.actor == PhotonNetwork.LocalPlayer.ActorNumber)
             {
-                index = x;
+                index = x-1;
             }
         }
     }
@@ -208,12 +226,12 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
                         break;
                 }
 
-                if(x == index)
+                if (x == index)
                 {
                     UpdateStatsDisplay();
                 }
 
-                if(UIController.instance.leaderboard.activeInHierarchy)
+                if (UIController.instance.leaderboard.activeInHierarchy)
                 {
                     ShowLeaderBoard();
                 }
@@ -221,6 +239,8 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
                 break;
             }
         }
+
+        ScoreCheck();
     }
 
     public void UpdateStatsDisplay()
@@ -259,7 +279,7 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
             newPlayerDisplay.gameObject.SetActive(true);
 
             lBoardPlayers.Add(newPlayerDisplay);
-          
+
         }
     }
 
@@ -267,12 +287,12 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
     {
         List<PlayerInfo> sorted = new List<PlayerInfo>();
 
-        while(sorted.Count < players.Count)
+        while (sorted.Count < players.Count)
         {
             int highest = -1;
             PlayerInfo selectedPlayer = players[0];
 
-            foreach(PlayerInfo player in players)
+            foreach (PlayerInfo player in players)
             {
                 if (!sorted.Contains(player))
                 {
@@ -288,6 +308,35 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
         }
 
         return sorted;
+    }
+
+    public override void OnLeftRoom()
+    {
+        base.OnLeftRoom();
+        SceneManager.LoadScene(0);
+    }
+
+    void ScoreCheck()
+    {
+        bool winnerFound = false;
+        foreach (PlayerInfo player in allPlayers)
+        {
+            if (player.kills >= killsToWin)
+            {
+                winnerFound = true;
+                break;
+            }
+        }
+
+        if (winnerFound)
+        {
+            if(PhotonNetwork.IsMasterClient && state != GameState.Ending)
+            {
+                state = GameState.Ending;
+                ListPlayerSend();
+
+            }
+        }
     }
 }
 
