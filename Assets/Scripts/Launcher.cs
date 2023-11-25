@@ -64,7 +64,7 @@ public class Launcher : MonoBehaviourPunCallbacks
         errorScreen.SetActive(false);
         roomBrowserScreen.SetActive(false);
         nameInputScreen.SetActive(false);
-        
+
         
 
     }
@@ -169,8 +169,10 @@ public class Launcher : MonoBehaviourPunCallbacks
         TMP_Text newPlayerLabel = Instantiate(playerNameLabel, playerNameLabel.transform.parent).GetComponent<TMP_Text>();
         newPlayerLabel.text = newPlayer.NickName;
         newPlayerLabel.gameObject.SetActive(true);
-
         allPlayers.Add(newPlayerLabel);
+        
+        // Send a network event to all clients telling them to update their player lists
+
     }
 
     override public void OnPlayerLeftRoom(Player otherPlayer)

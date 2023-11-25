@@ -48,7 +48,7 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
             EventCodes theEvent = (EventCodes)photonEvent.Code;
             object[] data = (object[])photonEvent.CustomData;
 
-            Debug.Log("Received event " + theEvent);
+          //  Debug.Log("Received event " + theEvent);
 
             switch (theEvent)
             {
@@ -101,17 +101,63 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
     public void NewPlayerReceive(object[] dataReceived)
     {
+        PlayerInfo player = new PlayerInfo(
+            (string)dataReceived[0],
+            (int)dataReceived[1],
+            (int)dataReceived[2],
+            (int)dataReceived[3]
+        );
 
+        allPlayers.Add(player);
+
+        ListPlayerSend();
     }
 
     public void ListPlayerSend()
     {
+        object[] package = new object[allPlayers.Count];
 
+        for (int x = 0; x < allPlayers.Count; x++)
+        {
+            object[] piece = new object[4];
+            piece[0] = allPlayers[x].name;
+            piece[1] = allPlayers[x].actor;
+            piece[2] = allPlayers[x].kills;
+            piece[3] = allPlayers[x].deaths;
+
+            package[x] = piece;
+        }
+
+        PhotonNetwork.RaiseEvent(
+            (byte)EventCodes.ListPlayers,
+            package,
+            new RaiseEventOptions { Receivers = ReceiverGroup.All },
+            new SendOptions { Reliability = true }
+        );
     }
 
     public void ListPlayerReceive(object[] dataReceived)
     {
+        allPlayers.Clear();
 
+        for (int x = 0; x < dataReceived.Length; x++)
+        {
+            object[] piece = (object[])dataReceived[x];
+
+            PlayerInfo player = new PlayerInfo(
+                (string)piece[0],
+                (int)piece[1],
+                (int)piece[2],
+                (int)piece[3]
+            );
+
+            allPlayers.Add(player);
+
+            if (player.actor == PhotonNetwork.LocalPlayer.ActorNumber)
+            {
+                index = x;
+            }
+        }
     }
     public void UpdateStatsSend()
     {
