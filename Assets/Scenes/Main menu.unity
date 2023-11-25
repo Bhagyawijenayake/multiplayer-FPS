@@ -485,6 +485,10 @@ MonoBehaviour:
   levelToPlay: Map 1
   startButton: {fileID: 797543310}
   roomTestButton: {fileID: 132832615}
+  allMaps:
+  - Map 1
+  - Map 2
+  changeMapBetweenRounds: 1
 --- !u!1 &70391021
 GameObject:
   m_ObjectHideFlags: 0
