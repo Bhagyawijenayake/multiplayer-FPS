@@ -25,6 +25,8 @@ public class UIController : MonoBehaviour
     public GameObject leaderboard;
     public LeaderBoardPlayer leaderBoardPlayerDisplay;
 
+    public GameObject endScreen;
+
 
     // Start is called before the first frame update
     void Start()
