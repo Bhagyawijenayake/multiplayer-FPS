@@ -177,8 +177,7 @@ public class Launcher : MonoBehaviourPunCallbacks
         newPlayerLabel.gameObject.SetActive(true);
         allPlayers.Add(newPlayerLabel);
         
-        // Send a network event to all clients telling them to update their player lists
-
+       
     }
 
     override public void OnPlayerLeftRoom(Player otherPlayer)

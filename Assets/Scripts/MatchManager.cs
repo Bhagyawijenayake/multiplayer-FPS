@@ -20,6 +20,7 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
         ListPlayers,
         UpdateStat,
         NextMatch,
+        TimerSync
     }
 
     public List<PlayerInfo> allPlayers = new List<PlayerInfo>();
@@ -43,6 +44,7 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
     public float matchLength = 100f;
     private float currentMatchTime;
+    private float sendTimer;
 
     void Start()
     {
@@ -76,8 +78,10 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
             }
         }
 
-        if (currentMatchTime > 0f && state == GameState.Playing)
+        if (PhotonNetwork.IsMasterClient)
         {
+            if (currentMatchTime > 0f && state == GameState.Playing)
+            {
                 currentMatchTime -= Time.deltaTime;
 
                 if (currentMatchTime <= 0f)
@@ -85,15 +89,23 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
                     currentMatchTime = 0f;
                     state = GameState.Ending;
 
-                    if(PhotonNetwork.IsMasterClient)
-                    {
+                   
                         ListPlayerSend();
 
                         StateCheck();
-                    }
+                    
                 }
 
                 UpdaeTimerDispay();
+
+                sendTimer -= Time.deltaTime;
+
+                if (sendTimer <= 0f)
+                {
+                    sendTimer += 1f;
+                    TimerSend();
+                }
+            }
         }
     }
 
@@ -119,6 +131,9 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
                     break;
                 case EventCodes.NextMatch:
                     NextMatchReceive();
+                    break;
+                case EventCodes.TimerSync:
+                    TimerReceive(data);
                     break;
 
 
@@ -485,6 +500,28 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
         var timeToDisplay = System.TimeSpan.FromSeconds(currentMatchTime);
         UIController.instance.timerText.text = timeToDisplay.Minutes.ToString("00") + ":" + timeToDisplay.Seconds.ToString("00");
     }
+
+    public void TimerSend()
+    {
+        object[] package = new object[] { (int)currentMatchTime, state };
+
+        PhotonNetwork.RaiseEvent(
+            (byte)EventCodes.TimerSync,
+            package,
+            new RaiseEventOptions { Receivers = ReceiverGroup.All },
+            new SendOptions { Reliability = true }
+        );
+
+    }
+
+    public void TimerReceive(object[] dataReceived)
+    {
+        currentMatchTime = (int)dataReceived[0];
+        state = (GameState)dataReceived[1];
+
+        UpdaeTimerDispay();
+    }
+
 }
 
 

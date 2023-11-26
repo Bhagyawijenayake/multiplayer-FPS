@@ -3404,6 +3404,30 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 894918916463566470, guid: 8deffe08b42a0dc48a062b767ed954ae, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 25.36
+      objectReference: {fileID: 0}
+    - target: {fileID: 894918916463566470, guid: 8deffe08b42a0dc48a062b767ed954ae, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.02
+      objectReference: {fileID: 0}
+    - target: {fileID: 1760139680073514446, guid: 8deffe08b42a0dc48a062b767ed954ae, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 25.73
+      objectReference: {fileID: 0}
+    - target: {fileID: 1760139680073514446, guid: 8deffe08b42a0dc48a062b767ed954ae, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 10.59
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118328291719187771, guid: 8deffe08b42a0dc48a062b767ed954ae, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.21
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118328291719187771, guid: 8deffe08b42a0dc48a062b767ed954ae, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -18.17
+      objectReference: {fileID: 0}
     - target: {fileID: 4112721018608109697, guid: 8deffe08b42a0dc48a062b767ed954ae, type: 3}
       propertyPath: m_Name
       value: Spawn manager
@@ -3451,6 +3475,14 @@ PrefabInstance:
     - target: {fileID: 4373971361633128453, guid: 8deffe08b42a0dc48a062b767ed954ae, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4977900871902794200, guid: 8deffe08b42a0dc48a062b767ed954ae, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 12.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4977900871902794200, guid: 8deffe08b42a0dc48a062b767ed954ae, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 22.9
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
