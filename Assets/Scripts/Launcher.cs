@@ -51,7 +51,12 @@ public class Launcher : MonoBehaviourPunCallbacks
         CloseMenus();
         loadingScreen.SetActive(true);
         loadingText.text = "Connecting to Network...";
+
+        if(!PhotonNetwork.IsConnected)
+        {
         PhotonNetwork.ConnectUsingSettings();
+
+        }
 
         #if UNITY_EDITOR
         roomTestButton.SetActive(true);

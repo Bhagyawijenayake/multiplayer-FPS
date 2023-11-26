@@ -250,7 +250,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
             {
                 // Lock the cursor if the player clicks the left mouse button
                 // 0 means the left mouse button
-                if (Input.GetMouseButtonDown(0))
+                if (Input.GetMouseButtonDown(0) && !UIController.instance.optionsScreen.activeInHierarchy)
                 {
                     Cursor.lockState = CursorLockMode.Locked;
                 }
