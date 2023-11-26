@@ -176,7 +176,6 @@ public class Launcher : MonoBehaviourPunCallbacks
         newPlayerLabel.text = newPlayer.NickName;
         newPlayerLabel.gameObject.SetActive(true);
         allPlayers.Add(newPlayerLabel);
-        
        
     }
 

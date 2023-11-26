@@ -60,6 +60,11 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
             state = GameState.Playing;
 
             SetupTimer();
+
+            if(!PhotonNetwork.IsMasterClient)
+            {
+                UIController.instance.timerText.gameObject.SetActive(false);
+            }
         }
     }
 
@@ -520,6 +525,8 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
         state = (GameState)dataReceived[1];
 
         UpdaeTimerDispay();
+
+        UIController.instance.timerText.gameObject.SetActive(true);
     }
 
 }
