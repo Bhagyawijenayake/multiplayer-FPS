@@ -467,6 +467,8 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
         PlayerSpawner.instance.SpawnPlayer();
 
+        SetupTimer();
+
     }
 
     public void SetupTimer()
