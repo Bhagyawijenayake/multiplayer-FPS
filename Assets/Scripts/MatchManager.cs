@@ -41,6 +41,9 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
     public bool perpetual;
 
+    public float matchLength = 100f;
+    private float currentMatchTime;
+
     void Start()
     {
         if (!PhotonNetwork.IsConnected)
@@ -53,6 +56,8 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
             NewPlayerSend(PhotonNetwork.NickName);
 
             state = GameState.Playing;
+
+            SetupTimer();
         }
     }
 
@@ -69,6 +74,26 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
             {
                 ShowLeaderBoard();
             }
+        }
+
+        if (currentMatchTime > 0f && state == GameState.Playing)
+        {
+                currentMatchTime -= Time.deltaTime;
+
+                if (currentMatchTime <= 0f)
+                {
+                    currentMatchTime = 0f;
+                    state = GameState.Ending;
+
+                    if(PhotonNetwork.IsMasterClient)
+                    {
+                        ListPlayerSend();
+
+                        StateCheck();
+                    }
+                }
+
+                UpdaeTimerDispay();
         }
     }
 
@@ -388,9 +413,9 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
         }
         else
         {
-            if(PhotonNetwork.IsMasterClient)
+            if (PhotonNetwork.IsMasterClient)
             {
-                if(!Launcher.instance.changeMapBetweenRounds)
+                if (!Launcher.instance.changeMapBetweenRounds)
                 {
                     NextMatchSend();
                 }
@@ -398,18 +423,18 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
                 {
                     int mapIndex = Random.Range(0, Launcher.instance.allMaps.Length);
 
-                    if(Launcher.instance.allMaps[mapIndex] == SceneManager.GetActiveScene().name)
+                    if (Launcher.instance.allMaps[mapIndex] == SceneManager.GetActiveScene().name)
                     {
-                       NextMatchSend();
+                        NextMatchSend();
                     }
                     else
                     {
                         PhotonNetwork.LoadLevel(Launcher.instance.allMaps[mapIndex]);
                     }
 
-                   
+
                 }
-                
+
             }
         }
 
@@ -437,11 +462,26 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
             player.kills = 0;
             player.deaths = 0;
         }
-      
+
         UpdateStatsDisplay();
 
         PlayerSpawner.instance.SpawnPlayer();
 
+    }
+
+    public void SetupTimer()
+    {
+        if (matchLength > 0)
+        {
+            currentMatchTime = matchLength;
+            UpdaeTimerDispay();
+        }
+    }
+
+    public void UpdaeTimerDispay()
+    {
+        var timeToDisplay = System.TimeSpan.FromSeconds(currentMatchTime);
+        UIController.instance.timerText.text = timeToDisplay.Minutes.ToString("00") + ":" + timeToDisplay.Seconds.ToString("00");
     }
 }
 
