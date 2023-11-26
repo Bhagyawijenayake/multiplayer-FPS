@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviourPunCallbacks
 {
     public Transform viewPoint;
     public float mouseSensitivity = 1f;
@@ -37,6 +38,17 @@ public class PlayerController : MonoBehaviour
     public Gun[] allGuns;
     private int selectedGun;
 
+    public GameObject playerHitImpact;
+
+    public int maxHealth = 100;
+    private int currentHealth;
+
+    public Animator anim;
+    public GameObject playerModel;
+    public Transform modelGunPoint, gunHolder;
+
+      public Material[] allSkins;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -48,180 +60,204 @@ public class PlayerController : MonoBehaviour
 
         // timeBetweenShots = 0.1f;
 
-        muzzleDisplayTime = 1/60f;
+        muzzleDisplayTime = 1 / 60f;
 
         UIController.instance.weaponTempSlider.maxValue = maxHeat;
 
         // Switch to the first gun in the array
-        SwitchGun();
+        // SwitchGun();
+        photonView.RPC("SetGun", RpcTarget.AllBuffered, selectedGun);
 
-        Transform newTrans = SpawnManager.instance.getSpawnPoint();
-        transform.position = newTrans.position;
-        transform.rotation = newTrans.rotation;
+        currentHealth = maxHealth;
+
+
+
+        // Transform newTrans = SpawnManager.instance.getSpawnPoint();
+        // transform.position = newTrans.position;
+        // transform.rotation = newTrans.rotation;
+
+        if (photonView.IsMine)
+        {
+            playerModel.SetActive(false);
+
+            UIController.instance.healthSlider.maxValue = maxHealth;
+            UIController.instance.healthSlider.value = currentHealth;
+        }
+        else
+        {
+            gunHolder.parent = modelGunPoint;
+            gunHolder.localPosition = Vector3.zero;
+            gunHolder.localRotation = Quaternion.identity;
+        }
+
+        playerModel.GetComponent<Renderer>().material = allSkins[photonView.Owner.ActorNumber % allSkins.Length];
     }
 
     // Update is called once per frame
     void Update()
     {
-        // Get the mouse input (how much the mouse moved) in the X and Y directions
-        mouseInput = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y")) * mouseSensitivity;
-
-        // Update the rotation of the player based on the mouse input
-        // Only rotate around the Y-axis (left and right)
-        transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, transform.rotation.eulerAngles.y + mouseInput.x, transform.rotation.eulerAngles.z);
-
-        verticalRotStore += mouseInput.y;
-        verticalRotStore = Mathf.Clamp(verticalRotStore, -60f, 60f);
-
-        // Check if the look controls are inverted
-        if (invertLook)
+        if (photonView.IsMine)
         {
-            // If they are, rotate the viewpoint based on the vertical rotation store
-            viewPoint.rotation = Quaternion.Euler(verticalRotStore, viewPoint.rotation.eulerAngles.y, viewPoint.rotation.eulerAngles.z);
-        }
-        else
-        {
-            // If they're not, rotate the viewpoint in the opposite direction
-            viewPoint.rotation = Quaternion.Euler(-verticalRotStore, viewPoint.rotation.eulerAngles.y, viewPoint.rotation.eulerAngles.z);
-        }
+            // Get the mouse input (how much the mouse moved) in the X and Y directions
+            mouseInput = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y")) * mouseSensitivity;
 
-        moveDir = new Vector3(Input.GetAxisRaw("Horizontal"), 0f, Input.GetAxisRaw("Vertical"));
+            // Update the rotation of the player based on the mouse input
+            // Only rotate around the Y-axis (left and right)
+            transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, transform.rotation.eulerAngles.y + mouseInput.x, transform.rotation.eulerAngles.z);
 
-        if (Input.GetKey(KeyCode.LeftShift))
-        {
-            activeMoveSpeed = runSpeed;
-        }
-        else
-        {
-            activeMoveSpeed = moveSpeed;
-        }
+            verticalRotStore += mouseInput.y;
+            verticalRotStore = Mathf.Clamp(verticalRotStore, -60f, 60f);
 
-        float yVel = movement.y;
-
-        // Calculate the player's movement direction by adding the forward movement (transform.forward * moveDir.z) and the rightward movement (transform.right * moveDir.x). The result is then normalized to ensure the movement speed stays consistent regardless of the input direction.
-        movement = ((transform.forward * moveDir.z) + (transform.right * moveDir.x)).normalized * activeMoveSpeed;
-        movement.y = yVel;
-
-        if (charCon.isGrounded)
-        {
-            movement.y = 0f;
-        }
-
-        // Check if the player is on the ground
-        isGrounded = Physics.Raycast(groundCheckPoint.position, Vector3.down, .25f, groundLayers);
-        if (Input.GetButtonDown("Jump") && isGrounded)
-        {
-            movement.y = jumpForce;
-        }
-
-        //gravity
-        movement.y += Physics.gravity.y * Time.deltaTime * gravityMod;
-
-        charCon.Move(movement * Time.deltaTime);
-
-        allGuns[selectedGun].muzzleFlash.SetActive(false);
-
-        if(allGuns[selectedGun].muzzleFlash.activeInHierarchy)
-        {
-            muzzleDisplayCounter -= Time.deltaTime;
-            if(muzzleDisplayCounter <= 0)
+            // Check if the look controls are inverted
+            if (invertLook)
             {
-                allGuns[selectedGun].muzzleFlash.SetActive(false);
+                // If they are, rotate the viewpoint based on the vertical rotation store
+                viewPoint.rotation = Quaternion.Euler(verticalRotStore, viewPoint.rotation.eulerAngles.y, viewPoint.rotation.eulerAngles.z);
             }
-        }
-
-        if (!overHeated)
-        {
-            if (Input.GetMouseButtonDown(0))
+            else
             {
-                shoot();
+                // If they're not, rotate the viewpoint in the opposite direction
+                viewPoint.rotation = Quaternion.Euler(-verticalRotStore, viewPoint.rotation.eulerAngles.y, viewPoint.rotation.eulerAngles.z);
             }
 
-            if (Input.GetMouseButton(0) && allGuns[selectedGun].isAutomatic)
+            moveDir = new Vector3(Input.GetAxisRaw("Horizontal"), 0f, Input.GetAxisRaw("Vertical"));
+
+            if (Input.GetKey(KeyCode.LeftShift))
             {
-                shotCounter -= Time.deltaTime;
-                Debug.Log(shotCounter);
-                if (shotCounter <= 0)
+                activeMoveSpeed = runSpeed;
+            }
+            else
+            {
+                activeMoveSpeed = moveSpeed;
+            }
+
+            float yVel = movement.y;
+
+            // Calculate the player's movement direction by adding the forward movement (transform.forward * moveDir.z) and the rightward movement (transform.right * moveDir.x). The result is then normalized to ensure the movement speed stays consistent regardless of the input direction.
+            movement = ((transform.forward * moveDir.z) + (transform.right * moveDir.x)).normalized * activeMoveSpeed;
+            movement.y = yVel;
+
+            if (charCon.isGrounded)
+            {
+                movement.y = 0f;
+            }
+
+            // Check if the player is on the ground
+            isGrounded = Physics.Raycast(groundCheckPoint.position, Vector3.down, .25f, groundLayers);
+            if (Input.GetButtonDown("Jump") && isGrounded)
+            {
+                movement.y = jumpForce;
+            }
+
+            //gravity
+            movement.y += Physics.gravity.y * Time.deltaTime * gravityMod;
+
+            charCon.Move(movement * Time.deltaTime);
+
+            allGuns[selectedGun].muzzleFlash.SetActive(false);
+
+            if (allGuns[selectedGun].muzzleFlash.activeInHierarchy)
+            {
+                muzzleDisplayCounter -= Time.deltaTime;
+                if (muzzleDisplayCounter <= 0)
                 {
-                    shoot();
+                    allGuns[selectedGun].muzzleFlash.SetActive(false);
                 }
             }
 
-            heatCounter -= coolRate * Time.deltaTime;
-
-        }
-        else
-        {
-            heatCounter -= overheatCoolRate * Time.deltaTime;
-            if (heatCounter <= 0)
+            if (!overHeated)
             {
+                if (Input.GetMouseButtonDown(0))
+                {
+                    shoot();
+                }
 
-                overHeated = false;
-                UIController.instance.overheatedmessage.gameObject.SetActive(false);
+                if (Input.GetMouseButton(0) && allGuns[selectedGun].isAutomatic)
+                {
+                    shotCounter -= Time.deltaTime;
+                    Debug.Log(shotCounter);
+                    if (shotCounter <= 0)
+                    {
+                        shoot();
+                    }
+                }
+
+                heatCounter -= coolRate * Time.deltaTime;
+
             }
-        }
-
-        if (heatCounter < 0)
-        {
-            heatCounter = 0f;
-        }
-
-        UIController.instance.weaponTempSlider.value = heatCounter;
-
-
-        if (Input.GetAxis("Mouse ScrollWheel") > 0f)
-        {
-            selectedGun++;
-            if (selectedGun >= allGuns.Length)
+            else
             {
-                selectedGun = 0;
-            }
+                heatCounter -= overheatCoolRate * Time.deltaTime;
+                if (heatCounter <= 0)
+                {
 
-            SwitchGun();
-
-        }
-        else if (Input.GetAxis("Mouse ScrollWheel") < 0f)
-        {
-            selectedGun--;
-            if (selectedGun < 0)
-            {
-                selectedGun = allGuns.Length - 1;
+                    overHeated = false;
+                    UIController.instance.overheatedmessage.gameObject.SetActive(false);
+                }
             }
 
-            SwitchGun();
-        }
-
-        for (int i = 0; i < allGuns.Length; i++)
-        {
-            if (Input.GetKeyDown((i + 1).ToString()))
+            if (heatCounter < 0)
             {
-                selectedGun = i;
-                SwitchGun();
+                heatCounter = 0f;
             }
-        }
+
+            UIController.instance.weaponTempSlider.value = heatCounter;
 
 
-
-
-
-
-
-
-
-
-
-        // Unlock the cursor if the player presses the escape key
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            Cursor.lockState = CursorLockMode.None;
-        }
-        else if (Cursor.lockState == CursorLockMode.None)
-        {
-            // Lock the cursor if the player clicks the left mouse button
-            // 0 means the left mouse button
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetAxis("Mouse ScrollWheel") > 0f)
             {
-                Cursor.lockState = CursorLockMode.Locked;
+                selectedGun++;
+                if (selectedGun >= allGuns.Length)
+                {
+                    selectedGun = 0;
+                }
+
+                // SwitchGun();
+                photonView.RPC("SetGun", RpcTarget.AllBuffered, selectedGun);
+
+
+            }
+            else if (Input.GetAxis("Mouse ScrollWheel") < 0f)
+            {
+                selectedGun--;
+                if (selectedGun < 0)
+                {
+                    selectedGun = allGuns.Length - 1;
+                }
+
+                // SwitchGun();
+                photonView.RPC("SetGun", RpcTarget.AllBuffered, selectedGun);
+
+            }
+
+            for (int i = 0; i < allGuns.Length; i++)
+            {
+                if (Input.GetKeyDown((i + 1).ToString()))
+                {
+                    selectedGun = i;
+                    // SwitchGun();
+                    photonView.RPC("SetGun", RpcTarget.AllBuffered, selectedGun);
+
+                }
+            }
+
+            anim.SetBool("grounded", isGrounded);
+            anim.SetFloat("speed", moveDir.magnitude);
+
+
+            // Unlock the cursor if the player presses the escape key
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                Cursor.lockState = CursorLockMode.None;
+            }
+            else if (Cursor.lockState == CursorLockMode.None)
+            {
+                // Lock the cursor if the player clicks the left mouse button
+                // 0 means the left mouse button
+                if (Input.GetMouseButtonDown(0) && !UIController.instance.optionsScreen.activeInHierarchy)
+                {
+                    Cursor.lockState = CursorLockMode.Locked;
+                }
             }
         }
     }
@@ -237,8 +273,19 @@ public class PlayerController : MonoBehaviour
         {
             // Debug.Log("I hit " + hit.collider.gameObject.name);
 
-            GameObject bulletImpactObject = Instantiate(bulletImpact, hit.point + (hit.normal * .002f), Quaternion.LookRotation(hit.normal, Vector3.up));
-            Destroy(bulletImpactObject, 5f);
+            if (hit.collider.gameObject.CompareTag("Player"))
+            {
+                Debug.Log("I hit " + hit.collider.gameObject.GetPhotonView().Owner.NickName);
+                PhotonNetwork.Instantiate(playerHitImpact.name, hit.point, Quaternion.identity);
+
+                hit.collider.gameObject.GetPhotonView().RPC("DealDamage", RpcTarget.All, photonView.Owner.NickName, allGuns[selectedGun].shotDamage, PhotonNetwork.LocalPlayer.ActorNumber);
+            }
+            else
+            {
+
+                GameObject bulletImpactObject = Instantiate(bulletImpact, hit.point + (hit.normal * .002f), Quaternion.LookRotation(hit.normal, Vector3.up));
+                Destroy(bulletImpactObject, 5f);
+            }
         }
         shotCounter = allGuns[selectedGun].timeBetweenShots;
 
@@ -258,14 +305,53 @@ public class PlayerController : MonoBehaviour
         muzzleDisplayCounter = muzzleDisplayTime;
     }
 
+    [PunRPC]
+    public void DealDamage(string damager, int damageAmount, int actor)
+    {
+        TakeDamage(damager, damageAmount, actor);
+    }
+
+    public void TakeDamage(string damager, int damageAmount, int actor)
+    {
+        if (photonView.IsMine)
+        {
+            // Debug.Log(photonView.Owner.NickName + "has been hit by " + damager);
+
+            currentHealth -= damageAmount;
+            if (currentHealth <= 0)
+            {
+                currentHealth = 0;
+                PlayerSpawner.instance.Die(damager);
+
+                MatchManager.instance.UpdateStatsSend(actor, 0, 1);
+            }
+
+
+            UIController.instance.healthSlider.value = currentHealth;
+
+        }
+
+    }
+
     // LateUpdate is called after Update
     private void LateUpdate()
     {
-        // Set the camera's position to the player's position
-        cam.transform.position = viewPoint.position;
+        if (photonView.IsMine)
+        {
+            if (MatchManager.instance.state == MatchManager.GameState.Playing)
+            {
+                // Set the camera's position to the player's position
+                cam.transform.position = viewPoint.position;
 
-        // Set the camera's rotation to the player's rotation
-        cam.transform.rotation = viewPoint.rotation;
+                // Set the camera's rotation to the player's rotation
+                cam.transform.rotation = viewPoint.rotation;
+            }
+            else
+            {
+                cam.transform.position = MatchManager.instance.mapCamPoint.position;
+                cam.transform.rotation = MatchManager.instance.mapCamPoint.rotation;
+            }
+        }
     }
 
     public void SwitchGun()
@@ -279,5 +365,15 @@ public class PlayerController : MonoBehaviour
 
         allGuns[selectedGun].muzzleFlash.SetActive(false);
 
+    }
+
+    [PunRPC]
+    public void SetGun(int gunToSwitchTo)
+    {
+        if (gunToSwitchTo < allGuns.Length)
+        {
+            selectedGun = gunToSwitchTo;
+            SwitchGun();
+        }
     }
 }
