@@ -33,6 +33,9 @@ public class UIController : MonoBehaviour
     public GameObject optionsScreen;
 
 
+     public TextMeshProUGUI bulletCountText; // Reference to the TextMeshProUGUI component
+
+
 
 
 
@@ -77,5 +80,11 @@ public class UIController : MonoBehaviour
     public void QuitGame()
     {
         Application.Quit();
+    }
+
+
+    public void UpdateBulletCount(int bulletCount)
+    {
+        bulletCountText.text = "Bullets: " + bulletCount;
     }
 }

@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
+using TMPro;
+
 
 public class PlayerController : MonoBehaviourPunCallbacks
 {
@@ -47,7 +49,19 @@ public class PlayerController : MonoBehaviourPunCallbacks
     public GameObject playerModel;
     public Transform modelGunPoint, gunHolder;
 
-      public Material[] allSkins;
+    public Material[] allSkins;
+
+    public static int bulletCount;
+
+    void Awake()
+    {
+        if (photonView.IsMine)
+        {
+
+        }
+    }
+
+
 
     // Start is called before the first frame update
     void Start()
@@ -82,6 +96,15 @@ public class PlayerController : MonoBehaviourPunCallbacks
 
             UIController.instance.healthSlider.maxValue = maxHealth;
             UIController.instance.healthSlider.value = currentHealth;
+
+            if (bulletCount == 0)
+            {
+                bulletCount = Random.Range(50, 100); // Assign a random value between 50 and 100 to bulletCount
+            }
+            UIController.instance.UpdateBulletCount(bulletCount); // Update the UI Text component
+
+            // bulletCount = Random.Range(50, 100); // Assign a random value between 50 and 100 to bulletCount
+            //UIController.instance.UpdateBulletCount(bulletCount); // Update the UI Text component
         }
         else
         {
@@ -272,6 +295,40 @@ public class PlayerController : MonoBehaviourPunCallbacks
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
             // Debug.Log("I hit " + hit.collider.gameObject.name);
+            if (photonView.IsMine)
+            {
+                if (bulletCount > 0)
+                {
+                    bulletCount--; // Decrease the bullet count
+                    UIController.instance.UpdateBulletCount(bulletCount); // Update the UI Text component
+                }
+                else
+                {
+                    Debug.Log("Out of bullets");
+                    return; // Exit the method if the player is out of bullets
+                }
+            }
+
+            if (hit.collider.gameObject.CompareTag("Player"))
+            {
+                Debug.Log("I hit " + hit.collider.gameObject.GetPhotonView().Owner.NickName);
+                PhotonNetwork.Instantiate(playerHitImpact.name, hit.point, Quaternion.identity);
+
+                hit.collider.gameObject.GetPhotonView().RPC("DealDamage", RpcTarget.All, photonView.Owner.NickName, allGuns[selectedGun].shotDamage, PhotonNetwork.LocalPlayer.ActorNumber);
+            }
+            else
+            {
+
+                GameObject bulletImpactObject = Instantiate(bulletImpact, hit.point + (hit.normal * .002f), Quaternion.LookRotation(hit.normal, Vector3.up));
+                Destroy(bulletImpactObject, 5f);
+            }
+        }
+        else
+        {
+            Debug.Log("I hit nothing");
+        }
+        {
+            // Debug.Log("I hit " + hit.collider.gameObject.name);
 
             if (hit.collider.gameObject.CompareTag("Player"))
             {
@@ -305,7 +362,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
         muzzleDisplayCounter = muzzleDisplayTime;
     }
 
-//when one client calls this method, the method will be executed on all clients connected to the same room.
+    //when one client calls this method, the method will be executed on all clients connected to the same room.
     [PunRPC]
     public void DealDamage(string damager, int damageAmount, int actor)
     {
@@ -376,5 +433,11 @@ public class PlayerController : MonoBehaviourPunCallbacks
             selectedGun = gunToSwitchTo;
             SwitchGun();
         }
+    }
+
+     public void ResetBulletCount()
+    {
+        bulletCount = Random.Range(50, 100); // Assign a random value between 50 and 100 to bulletCount
+        UIController.instance.UpdateBulletCount(bulletCount); // Update the UI Text component
     }
 }

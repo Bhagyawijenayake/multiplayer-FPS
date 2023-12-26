@@ -428,6 +428,17 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
         StartCoroutine(EndCo());
 
+         if (PhotonNetwork.IsMasterClient)
+        {
+            foreach (var player in FindObjectsOfType<PlayerController>())
+            {
+                if (player.photonView.IsMine)
+                {
+                    player.ResetBulletCount();
+                }
+            }
+        }
+
     }
 
     private IEnumerator EndCo()
