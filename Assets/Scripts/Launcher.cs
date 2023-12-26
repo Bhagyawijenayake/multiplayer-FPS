@@ -7,6 +7,8 @@ using Photon.Realtime;
 
 public class Launcher : MonoBehaviourPunCallbacks
 {
+
+    //singleton pattern to make sure there is only one instance of this class
     public static Launcher instance;
     private void Awake()
     {
@@ -24,7 +26,7 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     private List<TMP_Text> allPlayers = new List<TMP_Text>();
     public GameObject roomScreen;
-    public TMP_Text roomNameText , playerNameLabel;
+    public TMP_Text roomNameText, playerNameLabel;
 
     public GameObject errorScreen;
     public TMP_Text errorText;
@@ -35,7 +37,7 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     public GameObject nameInputScreen;
     public TMP_InputField nameInput;
-    public static bool hasSetNickName ;
+    public static bool hasSetNickName;
 
     public string levelToPlay;
     public GameObject startButton;
@@ -43,33 +45,40 @@ public class Launcher : MonoBehaviourPunCallbacks
     public GameObject roomTestButton;
 
     public string[] allMaps;
-    public bool changeMapBetweenRounds=true;
+    public bool changeMapBetweenRounds = true;
 
-  
+
 
     // Start is called before the first frame update
     void Start()
     {
+        //closes any open menus in the game UI. 
         CloseMenus();
         loadingScreen.SetActive(true);
         loadingText.text = "Connecting to Network...";
 
-        if(!PhotonNetwork.IsConnected)
+        if (!PhotonNetwork.IsConnected)
         {
-        PhotonNetwork.ConnectUsingSettings();
+            // If the Photon network is not connected,
+            // attempt to connect using the settings.
+            PhotonNetwork.ConnectUsingSettings();
 
         }
 
-        #if UNITY_EDITOR
+        //if the game is in the editor, show the room test button
+#if UNITY_EDITOR
         roomTestButton.SetActive(true);
-        #endif
+#endif
 
+        //unlock the cursor and make it visible.
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
     }
 
     void CloseMenus()
     {
+        //closes any open menus in the game UI.
+
         loadingScreen.SetActive(false);
         menuButtons.SetActive(false);
         createRoomScreen.SetActive(false);
@@ -78,27 +87,30 @@ public class Launcher : MonoBehaviourPunCallbacks
         roomBrowserScreen.SetActive(false);
         nameInputScreen.SetActive(false);
 
-        
+
 
     }
 
     public override void OnConnectedToMaster()
     {
-
+        // Attempt to join a lobby on the Master Server
         PhotonNetwork.JoinLobby();
 
+        // If any client loads a new Unity scene, that scene will be loaded for all connected clients
         PhotonNetwork.AutomaticallySyncScene = true;
 
         loadingText.text = "Joining Lobby...";
         //  Debug.Log("Connected to Master");
     }
 
+    //triggered when the client successfully joins a lobby.
     public override void OnJoinedLobby()
     {
         CloseMenus();
         menuButtons.SetActive(true);
         //Debug.Log("Joined Lobby");
 
+        // Set a temporary nickname for the player
         PhotonNetwork.NickName = "Player " + Random.Range(0, 1000).ToString();
 
         if (!hasSetNickName)
@@ -113,10 +125,12 @@ public class Launcher : MonoBehaviourPunCallbacks
         }
         else
         {
+            // If the player has set a nickname, set the Photon Network nickname to the player's name from PlayerPrefs
             PhotonNetwork.NickName = PlayerPrefs.GetString("PlayerName");
         }
     }
 
+    //  open a screen where a player can create a new room
     public void OpenRoomCreate()
     {
         CloseMenus();
@@ -125,10 +139,14 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     public void CreateRoom()
     {
+        //checks if the text of roomNameInput is not null or empty
         if (!string.IsNullOrEmpty(roomNameInput.text))
         {
+            //RoomOptions is a class in PUN that allows you to set various options for the room
             RoomOptions options = new RoomOptions();
             options.MaxPlayers = 8;
+
+            //creates a new room with the name entered by the player and the options specified
             PhotonNetwork.CreateRoom(roomNameInput.text, options);
             CloseMenus();
             loadingText.text = "Creating Room...";
@@ -138,7 +156,7 @@ public class Launcher : MonoBehaviourPunCallbacks
 
 
     }
-
+    //client successfully joins a room - Photon
     public override void OnJoinedRoom()
     {
         CloseMenus();
@@ -148,50 +166,66 @@ public class Launcher : MonoBehaviourPunCallbacks
 
         ListAllPlayers();
 
+        //checks if the current client is the master client of the room
         if (PhotonNetwork.IsMasterClient)
         {
+
+
+
             startButton.SetActive(true);
         }
         else
         {
             startButton.SetActive(false);
         }
-        
+
     }
 
+    //list all the players
     private void ListAllPlayers()
     {
+        //clear the list of players currently displayed in the game UI.
         foreach (TMP_Text player in allPlayers)
         {
+            //removes the player's name from the game UI.
             Destroy(player.gameObject);
         }
+        //clears the allPlayers list. This is done to prepare for a fresh list of players.
         allPlayers.Clear();
 
+
+        //players currently in the room from the PhotonNetwork and stores it in an array
         Player[] players = PhotonNetwork.PlayerList;
         for (int x = 0; x < players.Length; x++)
         {
+            //creates a new instance of a TextMeshPro text object for each player
             TMP_Text newPlayerLabel = Instantiate(playerNameLabel, playerNameLabel.transform.parent).GetComponent<TMP_Text>();
+            //sets the text of the new label to the nickname of the current player
             newPlayerLabel.text = players[x].NickName;
+            // player's name visible in the UI.
             newPlayerLabel.gameObject.SetActive(true);
+            //adds the new label to the allPlayers list.
             allPlayers.Add(newPlayerLabel);
         }
     }
-
+    //PUN framework, which is triggered when a new player enters the room
     override public void OnPlayerEnteredRoom(Player newPlayer)
     {
         TMP_Text newPlayerLabel = Instantiate(playerNameLabel, playerNameLabel.transform.parent).GetComponent<TMP_Text>();
         newPlayerLabel.text = newPlayer.NickName;
         newPlayerLabel.gameObject.SetActive(true);
         allPlayers.Add(newPlayerLabel);
-       
+
     }
 
+    // (PUN) framework, which is triggered when a player leaves the room.
     override public void OnPlayerLeftRoom(Player otherPlayer)
     {
+        //display a list of all players currently in the PhotonNetwork room
         ListAllPlayers();
     }
 
-       
+
 
     public override void OnCreateRoomFailed(short returnCode, string message)
     {
@@ -288,9 +322,9 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     public void StartGame()
     {
-       // PhotonNetwork.LoadLevel(levelToPlay);
+        // PhotonNetwork.LoadLevel(levelToPlay);
 
-       PhotonNetwork.LoadLevel(allMaps[Random.Range(0, allMaps.Length)]);
+        PhotonNetwork.LoadLevel(allMaps[Random.Range(0, allMaps.Length)]);
     }
 
     public override void OnMasterClientSwitched(Player newMasterClient)

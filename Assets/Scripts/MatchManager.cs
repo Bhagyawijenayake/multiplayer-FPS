@@ -48,6 +48,8 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
     void Start()
     {
+        //hecks if the player is not connected to the PhotonNetwork
+        //player is not connected, it loads the scene with index 0
         if (!PhotonNetwork.IsConnected)
         {
             SceneManager.LoadScene(0);
@@ -85,22 +87,26 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
         if (PhotonNetwork.IsMasterClient)
         {
+            // If the match time is greater than zero and the game state is Playing
             if (currentMatchTime > 0f && state == GameState.Playing)
             {
+                // Decrease the match time by the time that has passed since the last frame
                 currentMatchTime -= Time.deltaTime;
 
+                // If the match time is less than or equal to zero
                 if (currentMatchTime <= 0f)
                 {
                     currentMatchTime = 0f;
                     state = GameState.Ending;
 
-                   
+                   //send a list of players and check the game state.
                         ListPlayerSend();
 
                         StateCheck();
                     
                 }
 
+//update the timer display in the game.
                 UpdaeTimerDispay();
 
                 sendTimer -= Time.deltaTime;
@@ -113,12 +119,15 @@ public class MatchManager : MonoBehaviourPunCallbacks, IOnEventCallback
             }
         }
     }
-
+//triggered when a custom event is received from the network. - photon 
     public void OnEvent(EventData photonEvent)
     {
+        //Photon uses event codes less than 200 for internal events
         if (photonEvent.Code < 200)
         {
+            //event code to the EventCodes enum,
             EventCodes theEvent = (EventCodes)photonEvent.Code;
+            // extracts the custom data from the event. This data can be anything related to the event.
             object[] data = (object[])photonEvent.CustomData;
 
             //  Debug.Log("Received event " + theEvent);

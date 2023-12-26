@@ -305,6 +305,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
         muzzleDisplayCounter = muzzleDisplayTime;
     }
 
+//when one client calls this method, the method will be executed on all clients connected to the same room.
     [PunRPC]
     public void DealDamage(string damager, int damageAmount, int actor)
     {
