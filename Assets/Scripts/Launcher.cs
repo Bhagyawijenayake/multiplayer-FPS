@@ -169,10 +169,16 @@ public class Launcher : MonoBehaviourPunCallbacks
         //checks if the current client is the master client of the room
         if (PhotonNetwork.IsMasterClient)
         {
+            //if atleast 2 players are in the room, the start button is activated
+            Debug.Log(PhotonNetwork.CurrentRoom.PlayerCount);
+
+            UpdateStartButton();
 
 
 
-            startButton.SetActive(true);
+
+
+
         }
         else
         {
@@ -211,11 +217,14 @@ public class Launcher : MonoBehaviourPunCallbacks
     //PUN framework, which is triggered when a new player enters the room
     override public void OnPlayerEnteredRoom(Player newPlayer)
     {
+       // ListAllPlayers();
         TMP_Text newPlayerLabel = Instantiate(playerNameLabel, playerNameLabel.transform.parent).GetComponent<TMP_Text>();
         newPlayerLabel.text = newPlayer.NickName;
         newPlayerLabel.gameObject.SetActive(true);
         allPlayers.Add(newPlayerLabel);
+        Debug.Log("A new player joined the room. Total players: " + PhotonNetwork.CurrentRoom.PlayerCount);
 
+    UpdateStartButton();
     }
 
     // (PUN) framework, which is triggered when a player leaves the room.
@@ -223,6 +232,9 @@ public class Launcher : MonoBehaviourPunCallbacks
     {
         //display a list of all players currently in the PhotonNetwork room
         ListAllPlayers();
+         Debug.Log("Player left room. Current player count: " + PhotonNetwork.CurrentRoom.PlayerCount);
+
+    UpdateStartButton();
     }
 
 
@@ -354,5 +366,26 @@ public class Launcher : MonoBehaviourPunCallbacks
     {
         Application.Quit();
     }
+
+    void UpdateStartButton()
+{
+    //checks if the current client is the master client of the room
+    if (PhotonNetwork.IsMasterClient)
+    {
+        //if atleast 2 players are in the room, the start button is activated
+        if (PhotonNetwork.CurrentRoom.PlayerCount >= 2)
+        {
+            startButton.SetActive(true);
+        }
+        else
+        {
+            startButton.SetActive(false);
+        }
+    }
+    else
+    {
+        startButton.SetActive(false);
+    }
+}
 
 }
